@@ -318,6 +318,9 @@ else
   DONE_STREAK_REQUIRED=3
 fi
 
+# --- Safety cap: maximum iterations per lens ---
+MAX_ITERATIONS_PER_LENS=20
+
 # --- Derive repo metadata ---
 REPO_NAME="$(basename "$PROJECT_PATH")"
 REPO_OWNER="$(git -C "$PROJECT_PATH" remote get-url origin 2>/dev/null | sed -E 's#.*/([^/]+)/[^/]+(.git)?$#\1#' || echo "local")"
@@ -601,6 +604,13 @@ run_lens() {
         exit_status="max-issues"
         break
       fi
+    fi
+
+    # Safety cap: prevent runaway lenses
+    if [[ "$iteration" -ge "$MAX_ITERATIONS_PER_LENS" ]]; then
+      log_warn "[$domain/$lens_id] Hit safety cap ($MAX_ITERATIONS_PER_LENS iterations). Stopping lens."
+      exit_status="max-iterations"
+      break
     fi
 
     # Check for DONE

@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Tests for ANSI escape code handling in DONE streak detection
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$SCRIPT_DIR/lib/streak.sh"
+
+PASS=0
+FAIL=0
+TOTAL=0
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "$TMPDIR"' EXIT
+
+assert_done() {
+  local desc="$1" file="$2" expected="$3"
+  TOTAL=$((TOTAL + 1))
+  if check_done "$file"; then
+    actual="yes"
+  else
+    actual="no"
+  fi
+  if [[ "$expected" == "$actual" ]]; then
+    PASS=$((PASS + 1))
+    echo "  PASS: $desc"
+  else
+    FAIL=$((FAIL + 1))
+    echo "  FAIL: $desc (expected=$expected actual=$actual)"
+  fi
+}
+
+echo "=== ANSI Escape Code Handling in Streak Detection ==="
+
+# Plain DONE (baseline)
+f="$TMPDIR/plain.txt"
+printf "DONE\n" > "$f"
+assert_done "Plain DONE" "$f" "yes"
+
+# DONE wrapped in ANSI color reset
+f="$TMPDIR/ansi-reset.txt"
+printf '\e[0mDONE\e[0m\n' > "$f"
+assert_done "DONE wrapped in ANSI reset codes" "$f" "yes"
+
+# DONE with ANSI color prefix (bold green)
+f="$TMPDIR/ansi-color.txt"
+printf '\e[1;32mDONE\e[0m\n' > "$f"
+assert_done "DONE with bold green ANSI" "$f" "yes"
+
+# Colored output with DONE at end
+f="$TMPDIR/ansi-last.txt"
+printf '\e[0mSome analysis output here.\nFound 3 issues.\n\e[1;33mDONE\e[0m\n' > "$f"
+assert_done "DONE as last word with ANSI colors" "$f" "yes"
+
+# DONE at start, colored content follows
+f="$TMPDIR/ansi-first.txt"
+printf '\e[0mDONE\e[0m\n\e[1;34mAll issues reported above.\e[0m\n' > "$f"
+assert_done "DONE as first word with ANSI colors" "$f" "yes"
+
+# Opencode-style output: color reset prefix, content, no DONE
+f="$TMPDIR/ansi-no-done.txt"
+printf '\e[0mI found several issues. Created them via gh issue create call.\e[0m\n' > "$f"
+assert_done "ANSI output without DONE" "$f" "no"
+
+# DONE only in middle (should NOT match)
+f="$TMPDIR/middle-done.txt"
+printf 'Analysis DONE here but more text follows\n' > "$f"
+assert_done "DONE only in middle (should not match)" "$f" "no"
+
+# Multiple ANSI sequences wrapping DONE
+f="$TMPDIR/multi-ansi.txt"
+printf '\e[0m\e[1m\e[36mDONE\e[0m\e[0m\n' > "$f"
+assert_done "DONE with multiple nested ANSI sequences" "$f" "yes"
+
+# Empty file
+f="$TMPDIR/empty.txt"
+printf '' > "$f"
+assert_done "Empty file" "$f" "no"
+
+# Real opencode output pattern (from bug report: first word [0m, last word call.)
+f="$TMPDIR/opencode-broken.txt"
+printf '\e[0mI analyzed the codebase and created issues via gh issue create call.\e[0m\n' > "$f"
+assert_done "Opencode pattern without DONE (was false positive before fix)" "$f" "no"
+
+# Real opencode output pattern with DONE at end
+f="$TMPDIR/opencode-done.txt"
+printf '\e[0mI have completed my analysis. All issues reported.\n\nDONE\e[0m\n' > "$f"
+assert_done "Opencode pattern with DONE at end" "$f" "yes"
+
+echo ""
+echo "=== Results: $PASS/$TOTAL passed, $FAIL failed ==="
+exit "$FAIL"

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # RepoLens — DONE streak detection
 
+# Strip ANSI escape sequences from stdin.
+strip_ansi() {
+  sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\([0-9;]*[a-zA-Z]//g; s/\x1b\]8;[^\]*\\//g'
+}
+
 # Strip non-alphanumeric (keep _), uppercase.
 normalize_word() {
   local word="${1:-}"
@@ -8,17 +13,19 @@ normalize_word() {
 }
 
 # Extract first word from file. Returns "" if file empty/missing.
+# Strips ANSI escape codes before extraction so colored agent output is handled.
 first_word() {
   local file="$1"
   [[ -s "$file" ]] || { echo ""; return 0; }
-  awk '{for (i = 1; i <= NF; i++) { print $i; exit }}' "$file"
+  strip_ansi < "$file" | awk 'NF {for (i = 1; i <= NF; i++) { print $i; exit }}'
 }
 
 # Extract last word from file. Returns "" if file empty/missing.
+# Strips ANSI escape codes before extraction so colored agent output is handled.
 last_word() {
   local file="$1"
   [[ -s "$file" ]] || { echo ""; return 0; }
-  awk '{for (i = 1; i <= NF; i++) { last = $i }} END { print last }' "$file"
+  strip_ansi < "$file" | awk '{for (i = 1; i <= NF; i++) { last = $i }} END { if (last) print last }'
 }
 
 # Returns 0 if first OR last normalized word is "DONE", 1 otherwise.
