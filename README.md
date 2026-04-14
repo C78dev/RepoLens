@@ -237,6 +237,16 @@ make check
 
 This discovers and runs all `tests/test_*.sh` scripts, reports per-suite results, and exits non-zero if any suite fails.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to report bugs, suggest features, submit code, and add new lenses.
+
+Please note that this project is released with a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to abide by its terms.
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md). Do not open a public issue for security vulnerabilities.
+
 ## Legal
 
 ### License

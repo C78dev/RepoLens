@@ -1,0 +1,52 @@
+# Security Policy
+
+## Reporting a Vulnerability
+
+If you discover a security vulnerability in RepoLens, please report it responsibly.
+
+**Do NOT open a public GitHub issue for security vulnerabilities.**
+
+Instead, please use one of these methods:
+
+1. **GitHub Security Advisories:** Use the [private vulnerability reporting](https://github.com/TheMorpheus407/RepoLens/security/advisories/new) feature on this repository
+2. **Email:** Contact the maintainers directly through their GitHub profile
+
+### What to Include
+
+- A description of the vulnerability
+- Steps to reproduce the issue
+- The potential impact
+- Any suggested fix (if you have one)
+
+### Response Timeline
+
+- **Acknowledgment:** Within 72 hours of report
+- **Assessment:** Within 1 week
+- **Fix or mitigation:** As soon as reasonably possible, depending on severity
+
+## Scope
+
+This security policy covers:
+
+- The RepoLens CLI tool (`repolens.sh`) and its libraries (`lib/`)
+- Prompt templates (`prompts/`) — including prompt injection vectors
+- Configuration files (`config/`)
+
+## Security Considerations
+
+RepoLens runs AI agents with shell access against target repositories and servers. Users should be aware that:
+
+- **Audit mode** operates on local git repositories with read access
+- **Deploy mode** runs commands on live servers — always review agent output
+- The `--dangerously-skip-permissions` flag grants agents autonomous operation without confirmation prompts
+- Prompt templates are user-facing and should be reviewed for injection risks
+
+## Supported Versions
+
+| Version | Supported |
+|---------|-----------|
+| 0.1.x   | Yes       |
+
+## Disclosure Policy
+
+We follow coordinated disclosure. We ask that you give us reasonable time to address vulnerabilities before public disclosure.

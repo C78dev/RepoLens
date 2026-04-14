@@ -1,0 +1,39 @@
+# Changelog
+
+All notable changes to RepoLens will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.1.0] - 2026-04-14
+
+### Added
+
+- Multi-lens code audit engine with 280 expert analysis agents
+  - 192 code analysis lenses across 22 domains
+  - 18 tool gate lenses for static/dynamic analysis
+  - 14 product discovery lenses
+  - 26 deployment/server audit lenses
+  - 13 open-source readiness lenses
+  - 17 content quality lenses
+- Eight operational modes: audit, feature, bugfix, discover, deploy, oss-readiness, content-quality, all
+- Agent-agnostic design: supports claude, codex, spark/sparc, opencode
+- Parallel execution with configurable concurrency (`--parallel`)
+- DONE x3 streak detection for autonomous agent completion
+- Resume support (`--resume <run-id>`) for interrupted runs
+- Cost estimation display before run confirmation
+- Deploy mode with live server investigation (read-only)
+- Automatic GitHub issue creation for findings
+- Domain and lens filtering (`--domain`, `--lens`)
+- Maximum issue cap (`--max-issues`)
+- Spec file support (`--spec`) for focused analysis
+- Prompt composition via template engine
+- Structured logging with severity levels
+
+### Infrastructure
+
+- Apache 2.0 license
+- Comprehensive README with CLI reference
+- Test suite with 17 test suites
+- Modular library architecture (`lib/`)
+
+[0.1.0]: https://github.com/TheMorpheus407/RepoLens/releases/tag/v0.1.0
