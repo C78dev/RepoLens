@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Fixed
+
+- `trademark-branding` lens (`--mode opensource`) no longer searches for hardcoded author-specific brand names when auditing third-party repositories — it now dynamically derives search terms from the audited repo's owner and name, plus any additional brand terms the agent discovers from the README or package manifest
+
 ### Added
 
 - `--local` flag: write findings as local markdown files instead of creating GitHub issues — no `gh` CLI required

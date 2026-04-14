@@ -31,4 +31,4 @@ You specialize in auditing trademark, branding, and naming risks for open source
 5. Search for store metadata: `find . -name 'store_listing*' -o -name 'fastlane' -o -name 'metadata' -type d 2>/dev/null`
 6. Check for partner/sponsor logos: `find . -path '*/assets/*' -name '*.png' -o -path '*/assets/*' -name '*.svg' 2>/dev/null | head -30`
 7. Search for hardcoded social links: `grep -rn 'twitter\.com/\|youtube\.com/\|discord\.gg/\|t\.me/' --include='*.{dart,kt,java,py,js,ts,md,json,yaml,xml}'`
-8. Check for domain references that forks would inherit: `grep -rn 'the-morpheus\|morpheus\|bootstrapacademy\|bootstrap-academy' --include='*.{dart,kt,java,py,js,ts,json,yaml,xml,md}' 2>/dev/null | head -20`
+8. Check for domain references that forks would inherit: Identify the project name, organization name, and author handles from the README, package manifest, or git remote URL. Then search for those terms hardcoded in source files: `grep -rn '{{REPO_OWNER}}\|{{REPO_NAME}}' --include='*.{dart,kt,java,py,js,ts,json,yaml,xml,md}' 2>/dev/null | head -20`. Also search for any additional brand terms you discovered (product names, domain names, author handles).
