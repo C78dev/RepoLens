@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Infrastructure
 
 - Apache 2.0 license
+- Contributor Covenant 2.1 Code of Conduct
 - Comprehensive README with CLI reference
 - CONTRIBUTING.md with lens contribution workflow, domain taxonomy, and DCO sign-off guide
 - Test suite with 17 test suites
