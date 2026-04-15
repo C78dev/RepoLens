@@ -7,6 +7,9 @@
 
 **Multi-lens code audit tool.** Runs 280 specialist lenses across 27 domains against any git repository or live server and creates GitHub issues for real findings. Think automated code review, agent-driven pentesting, tool-driven static/dynamic analysis, and infrastructure auditing — all with deep specialization.
 
+> [!IMPORTANT]
+> **RepoLens runs AI agents with shell access against your repository, and a full audit can cost hundreds of dollars in API charges.** It is NOT a sandboxed security tool, comes with NO warranty, and you use it entirely at your own risk. **Read [Warnings & Limits](#warnings--limits) before your first run** — especially the cost and security sections.
+
 ## Getting Started
 
 ### Prerequisites
@@ -51,6 +54,70 @@ gh auth login
 # 6. Full parallel audit (all 280 lenses)
 ./repolens.sh --project ~/my-app --agent claude --parallel --max-parallel 8
 ```
+
+## Warnings & Limits
+
+RepoLens is a power tool. Before you point it at anything you care about — or anything that costs money — read this section.
+
+### Cost — RepoLens can be very expensive
+
+> [!CAUTION]
+> A full audit runs **280 lenses across 27 domains**. Each lens loops until the agent emits `DONE` three times in a row (`audit` / `feature` / `bugfix` modes). That adds up to **hundreds — often thousands — of agent invocations per run**, and cost scales with your model choice (Claude Opus is dramatically more expensive than smaller models or Codex). Real-world runs can easily reach hundreds of dollars on a single repo.
+
+**Before launching a full audit:**
+
+- Use `--max-cost <dollars>` to set a budget — RepoLens warns if the minimum estimate exceeds it. The estimate is a **lower bound**; real runs typically cost 2–5× more due to tool-call churn and DONE-streak iteration.
+- Use `--dry-run` to preview which lenses would execute without spending anything.
+- Use `--max-issues <n>` to cap output (also forces sequential execution).
+- Scope with `--focus <lens-id>` or `--domain <domain-id>` instead of auditing everything at once.
+- Calibrate cost on a single domain with a cheap agent (`codex`, `opencode`) before committing to a full parallel audit with a premium model.
+
+You are responsible for every dollar of API spend. Know your per-token pricing.
+
+### Rate Limits & Automated Traffic
+
+> [!NOTE]
+> RepoLens generates a lot of automated traffic. A 280-lens run can create dozens to hundreds of GitHub issues, plus repo reads via `gh`, plus parallel AI provider calls.
+
+- **GitHub API.** Authenticated `gh` calls count against your per-user REST and GraphQL quotas. Large runs can trip secondary (abuse) rate limits. Use `--max-issues <n>` to cap output, or `--local` to skip the GitHub API entirely.
+- **AI provider rate limits.** Every iteration consumes Anthropic / OpenAI tokens. Free and low-tier accounts will hit their RPM (requests-per-minute) and TPM (tokens-per-minute) ceilings immediately under `--parallel`. Verify your account is on a tier sized for concurrent agent traffic before scaling.
+- **Terms of Service & abuse risk.** Do **not** point RepoLens at repositories you do not own or have explicit permission to audit. Automated bulk issue creation against third-party repos can be treated as spam by GitHub and may get your account flagged or suspended.
+
+Start small with `--focus <lens-id>` or one `--domain`, then scale up with `--parallel --max-parallel 2` before raising concurrency. The default is `--max-parallel 8`.
+
+### Security & Safe Use
+
+> [!WARNING]
+> **RepoLens is NOT a sandboxed or hardened security tool.** It is an operator-trust tool designed for scanning repositories you own on a machine you control.
+
+Under the hood, RepoLens spawns AI agents (claude, codex, etc.) with shell access — claude specifically runs with `--dangerously-skip-permissions` for autonomous operation. That means:
+
+- **Prompt injection is trivial.** A README, code comment, commit message, or docstring in the scanned repo can instruct the agent to do arbitrary things.
+- **Scripts in the scanned repo can execute.** A hostile `docker-compose.yml`, `Makefile`, `package.json` postinstall hook, or shell script could be invoked by the agent while investigating.
+- **Deploy mode runs live shell commands** against whatever host you point it at — see also [Legal → Deploy Mode](#deploy-mode--authorization-required) for the authorization requirements.
+
+**Recommended setup:**
+
+- Run RepoLens inside a **dedicated, isolated VM or container** — never on a workstation that holds SSH keys, cloud credentials, browser sessions, or anything you can't afford to lose.
+- **Only scan repositories you own or fully trust.** Do not point RepoLens at random GitHub clones, dependency sources, or third-party code.
+- Treat every run as if the target repo were actively hostile.
+
+For vulnerability disclosure, see [SECURITY.md](SECURITY.md).
+
+### Disclaimer — No Warranty, Use at Your Own Risk
+
+> [!WARNING]
+> **RepoLens is provided "AS IS", without warranty of any kind**, express or implied — including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement. **You use it entirely at your own risk.**
+
+That risk includes, without limitation:
+
+- **Incorrect findings** — false positives, hallucinated issues, or misleading recommendations from AI agents.
+- **Missed issues** — real bugs, vulnerabilities, or misconfigurations RepoLens fails to detect.
+- **Financial cost** — API/token usage from agent CLIs (claude, codex, etc.) can accrue significant charges.
+- **Infrastructure impact** — in `deploy` mode and similar, agents execute shell commands on real systems; despite read-only prompting, unintended side effects are possible.
+- **GitHub side effects** — automated issue, label, and PR creation in your repositories.
+
+For the full legal text, see [LICENSE](LICENSE) (Apache License, Version 2.0, Sections 7 and 8).
 
 ## Modes
 
@@ -280,11 +347,7 @@ For information about project leadership, decision-making, and contribution acce
 
 ### License
 
-This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for the full text and [NOTICE](NOTICE) for required attribution.
-
-### No Warranty
-
-This software is provided **"as is"**, without warranty of any kind, express or implied. See the Apache-2.0 license for details.
+This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for the full text and [NOTICE](NOTICE) for required attribution. The warranty disclaimer is summarized in [Warnings & Limits → Disclaimer](#disclaimer--no-warranty-use-at-your-own-risk).
 
 ### Deploy Mode — Authorization Required
 
