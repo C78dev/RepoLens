@@ -34,14 +34,27 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR" || exit 1
 
-# Recursion guard: mirrors the Makefile behavior. When run-all.sh (or `make
-# check`) is invoked from within a test that itself calls either runner, skip
-# tests that would recurse into us.
-_SKIP_META=0
-if [[ -n "${REPOLENS_MAKE_CHECK:-}" ]]; then
-  _SKIP_META=1
-fi
+# Recursion guard — parity with the Makefile, plus hardening for AutoDev.
+#
+# Two shared env-var contracts:
+#   1. REPOLENS_MAKE_CHECK is exported so any child test that spawns
+#      `make check` is detected by the Makefile's own _SKIP_META guard
+#      (Makefile: `_SKIP_META := $(if $(REPOLENS_MAKE_CHECK),1,)`) — the
+#      inner make then skips meta tests that would recurse into a runner.
+#   2. run-all.sh itself is a test runner, so we unconditionally set
+#      _SKIP_META=1 here. The Makefile's top-level invocation keeps
+#      _SKIP_META=0 so a human running `make check` still validates the
+#      Makefile round-trip via test_issue6_test27_fix.sh. Automated
+#      consumers (AutoDev) invoke run-all.sh directly — those runs must
+#      never recurse into a second runner, because the inner `make check`
+#      re-runs every other suite (including tests that hang waiting for
+#      TTY stdin) and causes a multi-hour wedge.
+#
+# Skip criterion: any test file containing `&& make check` or a reference
+# to `tests/run-all.sh` — both are markers of a meta-test that spawns a
+# runner and would cascade.
 export REPOLENS_MAKE_CHECK=1
+_SKIP_META=1
 
 suites_run=0
 suites_failed=0
