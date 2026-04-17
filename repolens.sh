@@ -131,7 +131,7 @@ Environment:
                            the iteration is logged with [ERROR] and the lens
                            loop continues to the next iteration.
   REPOLENS_CHILD_MAX_WAIT  Per-child parallel-worker deadline in seconds
-                           (default: 14400). Outer safety net for parallel mode:
+                           (default: 144000). Outer safety net for parallel mode:
                            wait_all polls each background lens and SIGTERM/KILLs
                            any child that exceeds this deadline, then continues
                            with the remaining children. Should be >=
