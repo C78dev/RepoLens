@@ -471,5 +471,5 @@ RepoLens is free, open source, and maintained on a best-effort basis. **We do no
 
 **Commercial / paid support** for companies — installation help, custom lens development, integration consulting, prioritized fixes — is available. Email [hallo@bootstrap.academy](mailto:hallo@bootstrap.academy).
 
-Supported by [Patreon patrons](https://patreon.com/themorpheus407) — thank you.
+Supported by [Patreon patrons](https://patreon.com/themorpheus) — thank you.
 
